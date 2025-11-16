@@ -63,9 +63,7 @@ const App: React.FC = () => {
       setPdfUrl(null);
       setLabelCount(0);
 
-      const message =
-        err?.message ||
-        'خطا در پردازش فایل رخ داد. لطفاً ساختار فایل Excel را بررسی کرده و دوباره تلاش کنید.';
+      const message = err?.message || "An error occurred while processing the file.";
       setError(message);
     }
   };
@@ -73,112 +71,176 @@ const App: React.FC = () => {
   const canGenerate =
     !!excelFile && (status === 'idle' || status === 'error' || status === 'success');
 
-  return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-2xl bg-white shadow-lg rounded-2xl p-6 md:p-8">
-        <header className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
-            ابزار تولید لیبل انبار از روی Excel
-          </h1>
-          <p className="text-sm md:text-base text-slate-600 leading-relaxed">
-            فایل <span className="font-mono bg-slate-100 px-1 rounded">transfers.xlsx</span> را
-            بارگذاری کنید تا براساس ستون‌های
-            <strong> «نام کالا»</strong>، <strong>«کد انبار کالا»</strong> و{' '}
-            <strong>«تعداد»</strong>، برای هر ردیف به تعداد موردنیاز لیبل دوبه‌دو مشابه نمونهٔ
-            سیستم فعلی ساخته شود.
-          </p>
-        </header>
+  const renderStatusChip = () => {
+    if (status === 'idle') return null;
+    if (status === 'parsing' || status === 'generating') {
+      return (
+        <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-medium text-amber-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+          در حال پردازش فایل...
+        </span>
+      );
+    }
+    if (status === 'success') {
+      return (
+        <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-medium text-emerald-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          {labelCount.toLocaleString('fa-IR')} لیبل با موفقیت تولید شد.
+        </span>
+      );
+    }
+    if (status === 'error') {
+      return (
+        <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-[11px] font-medium text-red-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+          خطا در پردازش
+        </span>
+      );
+    }
+    return null;
+  };
 
-        <div className="space-y-4">
+  return (
+    <div className="min-h-screen bg-slate-950 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-50">
+      <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 py-6 md:px-8 md:py-10">
+        {/* Header */}
+        <header className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              فایل Excel ورودی
-            </label>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <input
-                type="file"
-                accept=".xlsx,.xls"
-                onChange={handleFileChange}
-                className="block w-full text-sm text-slate-700
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-full file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-slate-100 file:text-slate-700
-                  hover:file:bg-slate-200"
-              />
-              {excelFile && (
-                <span className="text-xs text-slate-500 truncate">
-                  فایل انتخاب‌شده: {excelFile.name}
-                </span>
-              )}
-            </div>
-            <p className="mt-2 text-xs text-slate-500">
-              حداقل ستون‌های لازم: «نام کالا»، «کد انبار کالا» و «تعداد». اگر عنوان ستون‌ها کمی
-              متفاوت باشد، سیستم سعی می‌کند آن‌ها را به‌صورت خودکار تشخیص دهد.
+            <h1 className="bg-gradient-to-l from-sky-400 to-emerald-300 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent md:text-3xl">
+              EFA Label PDF Generator
+            </h1>
+            <p className="mt-1 text-xs text-slate-300 md:text-sm">
+              تولید PDF لیبل‌های انبار (دو لیبل در هر صفحه) از روی فایل{' '}
+              <span className="font-mono text-sky-300">transfers.xlsx</span> بدون نیاز به هیچ
+              سرویس بیرونی.
             </p>
           </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={handleGenerate}
-              disabled={!canGenerate}
-              className="inline-flex items-center justify-center rounded-lg px-4 py-2.5
-                text-sm font-semibold text-white shadow-sm
-                bg-slate-900 hover:bg-slate-800
-                disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {status === 'parsing' && 'در حال خواندن Excel...'}
-              {status === 'generating' && 'در حال ساخت PDF لیبل‌ها...'}
-              {(status === 'idle' || status === 'success' || status === 'error') && 'تولید لیبل'}
-            </button>
-
-            {status === 'success' && (
-              <span className="text-xs text-emerald-600">
-                {labelCount.toLocaleString('fa-IR')} لیبل تولید شد.
-              </span>
-            )}
+          <div className="flex flex-col items-start gap-2 md:items-end">
+            {renderStatusChip()}
+            <span className="text-[10px] text-slate-500">
+              React · Vite · TypeScript · pdf-lib · JsBarcode · xlsx
+            </span>
           </div>
+        </header>
 
-          {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
-              {error}
-            </div>
-          )}
+        {/* Main card */}
+        <main className="flex flex-1 flex-col gap-6 md:flex-row">
+          {/* Left side: form */}
+          <section className="w-full md:w-3/5">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-xl shadow-slate-950/40 backdrop-blur">
+              <h2 className="mb-4 text-sm font-semibold text-slate-100">
+                ۱. انتخاب فایل Excel و تولید لیبل
+              </h2>
 
-          {(status === 'parsing' || status === 'generating') && (
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>در حال پردازش فایل... لطفاً صفحه را نبندید.</span>
-            </div>
-          )}
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-xs font-medium text-slate-200">
+                    فایل Excel ورودی
+                  </label>
+                  <div
+                    className="flex flex-col gap-3 rounded-xl border border-dashed border-slate-700 bg-slate-900/60 p-4 hover:border-sky-400/70"
+                  >
+                    <input
+                      type="file"
+                      accept=".xlsx,.xls"
+                      onChange={handleFileChange}
+                      className="block w-full cursor-pointer text-xs text-slate-200
+                        file:mr-4 file:cursor-pointer file:rounded-full file:border-0
+                        file:bg-slate-800 file:px-4 file:py-2
+                        file:text-xs file:font-semibold
+                        file:text-slate-50 hover:file:bg-slate-700"
+                    />
+                    <div className="flex flex-col gap-1 text-[11px] text-slate-400">
+                      <span>
+                        حداقل ستون‌های لازم: «نام کالا»، «کد انبار کالا» و «تعداد». اگر اسم‌ها
+                        کمی متفاوت باشند (مثلاً فاصله، نیم‌فاصله یا معادل انگلیسی)، سیستم سعی
+                        می‌کند خودش آن‌ها را تشخیص دهد.
+                      </span>
+                      {excelFile && (
+                        <span className="truncate text-[11px] text-sky-300">
+                          فایل انتخاب‌شده: {excelFile.name}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-          {pdfUrl && status === 'success' && (
-            <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4">
-              <p className="text-sm text-slate-700">
-                PDF آماده است. می‌توانید آن را دانلود کرده و روی لیبل‌پرینتر دو-ستونه فعلی خود
-                پرینت بگیرید.
-              </p>
-              <div className="flex flex-wrap gap-3 items-center">
-                <a
-                  href={pdfUrl}
-                  download="labels-output.pdf"
-                  className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
-                >
-                  دانلود PDF لیبل‌ها
-                </a>
-                <span className="text-xs text-slate-400">
-                  اندازه صفحه: 565 × 141 پوینت (دو لیبل کنار هم، مشابه فایل نمونه).
-                </span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleGenerate}
+                    disabled={!canGenerate}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-xs font-semibold text-slate-950 shadow-lg shadow-sky-500/30 transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {status === 'parsing' && 'در حال خواندن Excel...'}
+                    {status === 'generating' && 'در حال ساخت PDF لیبل‌ها...'}
+                    {(status === 'idle' || status === 'success' || status === 'error') &&
+                      'تولید لیبل‌ها'}
+                  </button>
+
+                  {status === 'success' && pdfUrl && (
+                    <a
+                      href={pdfUrl}
+                      download="labels-output.pdf"
+                      className="inline-flex items-center justify-center rounded-xl border border-slate-600 bg-slate-900 px-4 py-2.5 text-xs font-medium text-slate-100 shadow-sm hover:border-slate-400 hover:bg-slate-800"
+                    >
+                      دانلود PDF لیبل‌ها
+                    </a>
+                  )}
+                </div>
+
+                {error && (
+                  <div className="rounded-xl border border-red-500/40 bg-red-950/40 px-3 py-2 text-[11px] text-red-200">
+                    {error}
+                  </div>
+                )}
+
+                {(status === 'parsing' || status === 'generating') && (
+                  <div className="flex items-center gap-2 text-[11px] text-slate-300">
+                    <span className="inline-flex h-4 w-4 items-center justify-center">
+                      <span className="h-3 w-3 animate-spin rounded-full border-[2px] border-slate-400 border-t-transparent" />
+                    </span>
+                    در حال پردازش فایل... لطفاً صفحه را نبندید.
+                  </div>
+                )}
               </div>
             </div>
-          )}
-        </div>
+          </section>
 
-        <footer className="mt-6 border-t border-slate-100 pt-3">
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            این ابزار کاملاً آفلاین روی مرورگر شما اجرا می‌شود؛ هیچ داده‌ای به سرور ارسال
-            نمی‌شود و برای محیط‌های عملیاتی انبار ایفا مناسب است.
+          {/* Right side: info / steps */}
+          <aside className="w-full md:w-2/5">
+            <div className="flex h-full flex-col gap-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                <h3 className="mb-3 text-sm font-semibold text-slate-100">
+                  ۲. منطق تولید PDF (خلاصه)
+                </h3>
+                <ul className="space-y-2 text-[11px] leading-relaxed text-slate-300">
+                  <li>• برای هر ردیف Excel، مقدار «تعداد» مشخص می‌کند چند لیبل ساخته شود.</li>
+                  <li>• هر لیبل شامل بارکد CODE128، کد کالا و نام کالا است.</li>
+                  <li>• PDF با اندازه ۵۶۵ × ۱۴۱ پوینت و دو لیبل در هر صفحه (کنار هم) ساخته می‌شود.</li>
+                  <li>• اگر تعداد لیبل‌ها فرد باشد، آخرین لیبل تنها در سمت چپ صفحه‌ی آخر قرار می‌گیرد.</li>
+                </ul>
+              </div>
+
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 text-[11px] text-slate-300">
+                <h3 className="mb-3 text-sm font-semibold text-slate-100">
+                  ۳. نکات عملیاتی
+                </h3>
+                <ul className="space-y-2 leading-relaxed">
+                  <li>• خروجی PDF را روی لیبل‌پرینتر دو ستونه فعلی تست کن (Landscape).</li>
+                  <li>• مطمئن شو scaling چاپگر روی ۱۰۰٪ یا “Actual Size” باشد.</li>
+                  <li>• تمام پردازش روی مرورگر انجام می‌شود؛ هیچ داده‌ای از محیط انبار خارج نمی‌شود.</li>
+                </ul>
+              </div>
+            </div>
+          </aside>
+        </main>
+
+        <footer className="mt-6 border-t border-slate-800 pt-3">
+          <p className="text-[10px] text-slate-500">
+            ساخته شده برای فرآیندهای Fulfillment ایفا – قابل استقرار روی Cloudflare Pages و
+            اتصال به دامنه{' '}
+            <span className="font-mono text-sky-300">nexalabdev.app</span>.
           </p>
         </footer>
       </div>
