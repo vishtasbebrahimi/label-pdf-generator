@@ -30,13 +30,13 @@ export async function generateLabelsPdf(rows: ParsedRow[]): Promise<Uint8Array> 
 
   const pdfDoc = await PDFDocument.create();
 
-  // ابعاد صفحه بزرگ‌تر تا دو لیبل در هر صفحه بماند ولی خواناتر شود
-  const pageWidth = 1200;
-  const pageHeight = 300;
+  // ابعاد صفحه بزرگ‌تر برای لیبل‌های درشت‌تر (دو لیبل در هر صفحه باقی می‌ماند)
+  const pageWidth = 1400;
+  const pageHeight = 360;
 
   const labelWidth = pageWidth / 2;
-  const horizontalPadding = 20;
-  const verticalPadding = 20;
+  const horizontalPadding = 15;
+  const verticalPadding = 15;
 
   const cache = new Map<string, any>();
 
