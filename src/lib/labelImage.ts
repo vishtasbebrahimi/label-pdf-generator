@@ -30,7 +30,7 @@ function truncateText(
  */
 export function createLabelPngDataUrl(label: LabelData): string {
   const width = 1000;
-  const height = 250;
+  const height = 320;
 
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -70,7 +70,7 @@ export function createLabelPngDataUrl(label: LabelData): string {
   ctx.fillStyle = '#000000';
   ctx.textAlign = 'center';
   ctx.font = 'bold 42px "Segoe UI", Arial, sans-serif';
-  const codeY = barcodeBottom + 40;
+  const codeY = barcodeBottom + 30;
   ctx.fillText(label.code, width / 2, codeY);
 
   // نام کالا (فارسی) زیر کد
@@ -78,7 +78,7 @@ export function createLabelPngDataUrl(label: LabelData): string {
   (ctx as any).direction = 'rtl';
   const maxTextWidth = width * 0.9;
   const productText = truncateText(ctx, label.name, maxTextWidth);
-  const nameY = codeY + 40;
+  const nameY = codeY + 35;
   ctx.fillText(productText, width / 2, nameY);
 
   return canvas.toDataURL('image/png');
