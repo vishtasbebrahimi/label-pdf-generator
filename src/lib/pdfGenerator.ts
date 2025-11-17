@@ -30,13 +30,13 @@ export async function generateLabelsPdf(rows: ParsedRow[]): Promise<Uint8Array> 
 
   const pdfDoc = await PDFDocument.create();
 
-  // ابعاد صفحه را از روی barcode.pdf استخراج کرده‌ایم:
-  // width = 565pt, height = 141pt (دو لیبل کنار هم روی رول فعلی)
-  const pageWidth = 565;
-  const pageHeight = 141;
+  // ابعاد صفحه بزرگ‌تر تا دو لیبل در هر صفحه بماند ولی خواناتر شود
+  const pageWidth = 1200;
+  const pageHeight = 300;
 
   const labelWidth = pageWidth / 2;
-  const horizontalPadding = 5;
+  const horizontalPadding = 20;
+  const verticalPadding = 20;
 
   const cache = new Map<string, any>();
 
@@ -61,7 +61,8 @@ export async function generateLabelsPdf(rows: ParsedRow[]): Promise<Uint8Array> 
     }
 
     const availableWidth = labelWidth - 2 * horizontalPadding;
-    const scale = availableWidth / image.width;
+    const availableHeight = pageHeight - 2 * verticalPadding;
+    const scale = Math.min(availableWidth / image.width, availableHeight / image.height);
     const scaled = image.scale(scale);
 
     const isLeft = labelIndexOnPage === 0;
