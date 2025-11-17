@@ -47,14 +47,16 @@ export function createLabelPngDataUrl(label: LabelData): string {
 
   // بارکد را روی یک canvas جداگانه می‌کشیم
   const barcodeCanvas = document.createElement('canvas');
-  barcodeCanvas.width = Math.floor(width * 0.9);
-  barcodeCanvas.height = 120;
+  // بیشتر کردن عرض بارکد برای خوانایی بهتر
+  barcodeCanvas.width = Math.floor(width * 0.96);
+  barcodeCanvas.height = 150;
 
   JsBarcode(barcodeCanvas, label.code || '-', {
     format: 'CODE128',
     displayValue: false,
-    margin: 0,
-    height: 110
+    margin: 4,
+    height: 135,
+    width: 3
   });
 
   const barcodeX = (width - barcodeCanvas.width) / 2;
